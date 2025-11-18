@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hire Gem - AI Profile Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .nav-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="file"],
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+            font-family: inherit;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            color: #718096;
+            font-size: 0.85em;
+        }
+
+        .extract-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .extract-btn:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .extract-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .error {
+            display: none;
+            padding: 16px 20px;
+            background: #fed7d7;
+            color: #c53030;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .match-score {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+
+        .match-score-number {
+            font-size: 4.5em;
+            font-weight: 700;
+            margin: 10px 0;
+            letter-spacing: -2px;
+        }
+
+        .match-score-label {
+            font-size: 1.1em;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .analysis-section {
+            margin-bottom: 28px;
+        }
+
+        .analysis-section h3 {
+            color: #2d3748;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .summary-box,
+        .strengths-box,
+        .weaknesses-box,
+        .highlights-box,
+        .key-points-box {
+            padding: 24px;
+            border-radius: 12px;
+            line-height: 1.7;
+            font-size: 0.95em;
+        }
+
+        .summary-box {
+            background: #f8fafc;
+            border-left: 4px solid #667eea;
+        }
+
+        .strengths-box {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+        }
+
+        .weaknesses-box {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+        }
+
+        .highlights-box {
+            background: #fffbeb;
+            border-left: 4px solid #f6ad55;
+        }
+
+        .key-points-box {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+        }
+
+        .analysis-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .analysis-section li {
+            padding: 10px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .analysis-section li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        .skills-match {
+            display: flex;
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .matched-skills, .missing-skills {
+            flex: 1;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .matched-skills {
+            background: #f0fff4;
+        }
+
+        .missing-skills {
+            background: #fff5f5;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            padding: 6px 14px;
+            margin: 6px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            background: white;
+            font-weight: 500;
+        }
+
+        .scraped-data {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .data-section {
+            margin-bottom: 30px;
+            padding: 24px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .data-section h3 {
+            color: #2d3748;
+            margin-bottom: 16px;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .links-found {
+            background: #f0fff4;
+            color: #22543d;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+            border-left: 4px solid #48bb78;
+        }
+
+        .links-found.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header" style="position: relative;">
+            <a href="/chat" class="nav-link">💬 AI Agent Chat</a>
+            <h1>💎 Hire Gem</h1>
+            <p>AI-Powered Profile Analysis</p>
+        </div>
+        
+        <div class="content">
+            <form id="profileForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="personName">Person Name/ID *</label>
+                    <input 
+                        type="text" 
+                        id="personName" 
+                        name="personName" 
+                        placeholder="Enter person's name or unique ID"
+                        required
+                    >
+                    <small>This will be used to save and organize the profile data</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="jobDescription">Job Description (Optional)</label>
+                    <textarea 
+                        id="jobDescription" 
+                        name="jobDescription" 
+                        placeholder="Paste the job description here to get a match score and tailored analysis..."
+                    ></textarea>
+                    <small>Paste the job description to get personalized match analysis, strengths, and weaknesses</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cv">Upload Your CV/Resume</label>
+                    <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx,.txt" required>
+                    <small>Supported formats: PDF, DOC, DOCX, TXT (Max 16MB)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="links">Enter Your Profile Links</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <textarea 
+                        id="links" 
+                        name="links" 
+                        placeholder="Enter comma-separated links (e.g., https://github.com/username, https://linkedin.com/in/username) or click 'Extract from CV' to auto-fill"
+                        style="min-height: 100px;"
+                    ></textarea>
+                    </div>
+                    <button type="button" id="extractLinksBtn" class="extract-btn">🔗 Extract from CV</button>
+                    <small>Enter links to GitHub, LinkedIn, DevPost, Kaggle, portfolio, or any other profile links</small>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">Analyze Profile</button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <p>Analyzing your profile... This may take a moment.</p>
+            </div>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="results" id="results">
+                <!-- Match Score (if job description provided) -->
+                <div id="matchScoreSection" style="display: none;"></div>
+                
+                <h2 style="color: #2d3748; margin-bottom: 24px; font-size: 1.8em; font-weight: 700;">📊 Profile Analysis</h2>
+                
+                <!-- Summary -->
+                <div class="analysis-section">
+                    <h3>Summary</h3>
+                    <div class="summary-box" id="summary"></div>
+                </div>
+                
+                <!-- Strengths -->
+                <div class="analysis-section" id="strengthsSection" style="display: none;">
+                    <h3>✅ Strengths</h3>
+                    <div class="strengths-box" id="strengths"></div>
+                </div>
+                
+                <!-- Weaknesses -->
+                <div class="analysis-section" id="weaknessesSection" style="display: none;">
+                    <h3>⚠️ Areas for Improvement</h3>
+                    <div class="weaknesses-box" id="weaknesses"></div>
+                </div>
+                
+                <!-- Unique Highlights -->
+                <div class="analysis-section" id="highlightsSection" style="display: none;">
+                    <h3>🌟 Unique Highlights</h3>
+                    <div class="highlights-box" id="highlights"></div>
+                </div>
+                
+                <!-- Key Points -->
+                <div class="analysis-section" id="keyPointsSection" style="display: none;">
+                    <h3>💡 Key Points</h3>
+                    <div class="key-points-box" id="keyPoints"></div>
+                </div>
+                
+                <!-- Skills Match (if job description provided) -->
+                <div class="analysis-section" id="skillsMatchSection" style="display: none;">
+                    <h3>🔧 Skills Analysis</h3>
+                    <div class="skills-match">
+                        <div class="matched-skills">
+                            <h4>✅ Matched Skills</h4>
+                            <div id="matchedSkills"></div>
+                        </div>
+                        <div class="missing-skills">
+                            <h4>❌ Missing Skills</h4>
+                            <div id="missingSkills"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recommendations -->
+                <div class="analysis-section" id="recommendationsSection" style="display: none;">
+                    <h3>💼 Recommendations</h3>
+                    <div class="key-points-box" id="recommendations"></div>
+                </div>
+                
+                <!-- Scraped Data -->
+                <div class="scraped-data" id="scrapedData"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('profileForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const results = document.getElementById('results');
+        const summaryDiv = document.getElementById('summary');
+        const scrapedDataDiv = document.getElementById('scrapedData');
+        const extractLinksBtn = document.getElementById('extractLinksBtn');
+        const linksTextarea = document.getElementById('links');
+
+        // Extract links from CV button
+        extractLinksBtn.addEventListener('click', async () => {
+            const fileInput = document.getElementById('cv');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please upload a CV file first!');
+                return;
+            }
+
+            extractLinksBtn.disabled = true;
+            extractLinksBtn.textContent = 'Extracting...';
+
+            const formData = new FormData();
+            formData.append('cv', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/extract-links', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (data.links && data.links.length > 0) {
+                        const existingLinks = linksTextarea.value.trim();
+                        const newLinks = data.links.join(', ');
+                        
+                        if (existingLinks) {
+                            const existingList = existingLinks.split(',').map(l => l.trim());
+                            const newList = data.links.map(l => l.trim());
+                            const merged = [...new Set([...existingList, ...newList])];
+                            linksTextarea.value = merged.join(', ');
+                        } else {
+                            linksTextarea.value = newLinks;
+                        }
+
+                        const successMsg = document.createElement('div');
+                        successMsg.className = 'links-found active';
+                        successMsg.textContent = `✅ Found ${data.count} link(s) in your CV!`;
+                        linksTextarea.parentElement.appendChild(successMsg);
+                        
+                        setTimeout(() => {
+                            successMsg.remove();
+                        }, 5000);
+                    } else {
+                        alert('No links found in the CV document.');
+                    }
+                } else {
+                    alert('Error extracting links: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            } finally {
+                extractLinksBtn.disabled = false;
+                extractLinksBtn.textContent = '🔗 Extract from CV';
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            loading.classList.add('active');
+            results.classList.remove('active');
+            error.classList.remove('active');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const analysis = data.analysis || {};
+                    
+                    // Display match score if job description was provided
+                    if (data.has_job_description && analysis.match_score !== undefined) {
+                        const matchScoreSection = document.getElementById('matchScoreSection');
+                        const score = analysis.match_score || 0;
+                        const scoreColor = score >= 80 ? '#48bb78' : score >= 60 ? '#f6ad55' : '#f56565';
+                        
+                        matchScoreSection.innerHTML = `
+                            <div class="match-score" style="background: linear-gradient(135deg, ${scoreColor} 0%, ${scoreColor}dd 100%);">
+                                <div class="match-score-label">Job Match Score</div>
+                                <div class="match-score-number">${score}%</div>
+                                <div style="font-size: 0.9em; opacity: 0.9;">
+                                    ${score >= 80 ? 'Excellent Match!' : score >= 60 ? 'Good Match' : 'Needs Improvement'}
+                                </div>
+                            </div>
+                        `;
+                        matchScoreSection.style.display = 'block';
+                    } else {
+                        document.getElementById('matchScoreSection').style.display = 'none';
+                    }
+                    
+                    // Display summary
+                    if (analysis.summary) {
+                        summaryDiv.textContent = analysis.summary;
+                    } else if (typeof analysis === 'string') {
+                        summaryDiv.textContent = analysis;
+                    }
+                    
+                    // Display strengths
+                    if (analysis.strengths && analysis.strengths.length > 0) {
+                        const strengthsDiv = document.getElementById('strengths');
+                        strengthsDiv.innerHTML = '<ul>' + analysis.strengths.map(s => `<li>${s}</li>`).join('') + '</ul>';
+                        document.getElementById('strengthsSection').style.display = 'block';
+                    }
+                    
+                    // Display weaknesses
+                    if (analysis.weaknesses && analysis.weaknesses.length > 0) {
+                        const weaknessesDiv = document.getElementById('weaknesses');
+                        weaknessesDiv.innerHTML = '<ul>' + analysis.weaknesses.map(w => `<li>${w}</li>`).join('') + '</ul>';
+                        document.getElementById('weaknessesSection').style.display = 'block';
+                    }
+                    
+                    // Display unique highlights
+                    if (analysis.unique_highlights && analysis.unique_highlights.length > 0) {
+                        const highlightsDiv = document.getElementById('highlights');
+                        highlightsDiv.innerHTML = '<ul>' + analysis.unique_highlights.map(h => `<li>${h}</li>`).join('') + '</ul>';
+                        document.getElementById('highlightsSection').style.display = 'block';
+                    }
+                    
+                    // Display key points
+                    if (analysis.key_points && analysis.key_points.length > 0) {
+                        const keyPointsDiv = document.getElementById('keyPoints');
+                        keyPointsDiv.innerHTML = '<ul>' + analysis.key_points.map(k => `<li>${k}</li>`).join('') + '</ul>';
+                        document.getElementById('keyPointsSection').style.display = 'block';
+                    }
+                    
+                    // Display skills match
+                    if (analysis.skills_match) {
+                        const matchedSkillsDiv = document.getElementById('matchedSkills');
+                        const missingSkillsDiv = document.getElementById('missingSkills');
+                        
+                        if (analysis.skills_match.matched_skills && analysis.skills_match.matched_skills.length > 0) {
+                            matchedSkillsDiv.innerHTML = analysis.skills_match.matched_skills
+                                .map(skill => `<span class="skill-tag">${skill}</span>`).join('');
+                        } else {
+                            matchedSkillsDiv.innerHTML = '<p style="color: #666;">No matched skills found</p>';
+                        }
+                        
+                        if (analysis.skills_match.missing_skills && analysis.skills_match.missing_skills.length > 0) {
+                            missingSkillsDiv.innerHTML = analysis.skills_match.missing_skills
+                                .map(skill => `<span class="skill-tag">${skill}</span>`).join('');
+                        } else {
+                            missingSkillsDiv.innerHTML = '<p style="color: #666;">No missing skills</p>';
+                        }
+                        
+                        document.getElementById('skillsMatchSection').style.display = 'block';
+                    }
+                    
+                    // Display recommendations
+                    if (analysis.recommendations && analysis.recommendations.length > 0) {
+                        const recommendationsDiv = document.getElementById('recommendations');
+                        recommendationsDiv.innerHTML = '<ul>' + analysis.recommendations.map(r => `<li>${r}</li>`).join('') + '</ul>';
+                        document.getElementById('recommendationsSection').style.display = 'block';
+                    }
+                    
+                    // Display scraped data (keeping existing logic)
+                    let scrapedHtml = '';
+                    if (data.scraped_data) {
+                        for (const [platform, info] of Object.entries(data.scraped_data)) {
+                            if (info && !info.error) {
+                                scrapedHtml += `<div class="data-section">
+                                    <h3>${platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>`;
+                                
+                                // Handle different platforms (existing logic)
+                                if (platform === 'devpost' && info.projects) {
+                                    info.projects.forEach((project, idx) => {
+                                        scrapedHtml += `<div style="margin-bottom: 20px; padding: 16px; background: white; border-radius: 10px;">`;
+                                        if (project.image_url) {
+                                            scrapedHtml += `<img src="${project.image_url}" alt="${project.name || 'Project'}" style="max-width: 100%; border-radius: 8px; margin-bottom: 12px;">`;
+                                        }
+                                        scrapedHtml += `<h4 style="color: #667eea; margin-bottom: 8px;">${project.name || 'Unnamed Project'}</h4>`;
+                                        if (project.description) {
+                                            scrapedHtml += `<p style="margin-bottom: 8px;">${project.description}</p>`;
+                                        }
+                                        scrapedHtml += `</div>`;
+                                    });
+                                } else if (platform === 'github' && info.repositories) {
+                                    info.repositories.forEach(repo => {
+                                        scrapedHtml += `<div style="margin-bottom: 16px; padding: 16px; background: white; border-radius: 10px;">`;
+                                        scrapedHtml += `<h4 style="color: #667eea;">${repo.name || 'Unnamed Repo'}</h4>`;
+                                        if (repo.description) {
+                                            scrapedHtml += `<p>${repo.description}</p>`;
+                                        }
+                                        scrapedHtml += `</div>`;
+                                    });
+                                } else {
+                                    scrapedHtml += `<pre style="white-space: pre-wrap; font-family: inherit;">${JSON.stringify(info, null, 2)}</pre>`;
+                                }
+                                
+                                scrapedHtml += `</div>`;
+                            }
+                        }
+                    }
+                    scrapedDataDiv.innerHTML = scrapedHtml;
+                    
+                    results.classList.add('active');
+                } else {
+                    error.textContent = data.error || 'An error occurred';
+                    error.classList.add('active');
+                }
+            } catch (err) {
+                error.textContent = 'Network error: ' + err.message;
+                error.classList.add('active');
+            } finally {
+                loading.classList.remove('active');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Analyze Profile';
+            }
+        });
+    </script>
+</body>
+</html>

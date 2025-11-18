@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Chat - Hire Gem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .person-selector {
+            padding: 24px 40px;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .person-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95em;
+        }
+
+        .person-selector select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95em;
+            background: white;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .person-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .person-info {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #ebf8ff;
+            border-radius: 10px;
+            display: none;
+            border-left: 4px solid #4299e1;
+        }
+
+        .person-info.active {
+            display: block;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 40px;
+            background: #f8fafc;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            word-wrap: break-word;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.system .message-content {
+            background: #fffbeb;
+            color: #744210;
+            border: 2px solid #f6ad55;
+            font-style: italic;
+            text-align: center;
+            max-width: 100%;
+        }
+
+        .chat-input-container {
+            padding: 24px 40px;
+            background: white;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95em;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tool-indicator {
+            font-size: 0.85em;
+            color: #718096;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .tool-indicator.multiple {
+            color: #667eea;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💎 Hire Gem - AI Agent Chat</h1>
+            <a href="/" class="nav-link">← Back to Analyzer</a>
+        </div>
+
+        <div class="person-selector">
+            <label for="personSelect"><strong>Select Person:</strong></label>
+            <select id="personSelect">
+                <option value="">-- Select a person --</option>
+            </select>
+            <div class="person-info" id="personInfo">
+                <strong>Loaded:</strong> <span id="personName"></span>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message system">
+                    <div class="message-content">
+                        Select a person to start chatting with the AI agent about their profile.
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <form id="chatForm" class="chat-input-form">
+                    <textarea 
+                        id="chatInput" 
+                        class="chat-input" 
+                        placeholder="Ask me anything about this person's profile..."
+                        disabled
+                    ></textarea>
+                    <button type="submit" class="send-btn" id="sendBtn" disabled>Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPersonData = null;
+        let chatHistory = [];
+
+        // Load persons list
+        async function loadPersons() {
+            try {
+                const response = await fetch('/api/persons');
+                const data = await response.json();
+                
+                if (data.success && data.persons) {
+                    const select = document.getElementById('personSelect');
+                    select.innerHTML = '<option value="">-- Select a person --</option>';
+                    
+                    data.persons.forEach(person => {
+                        const option = document.createElement('option');
+                        option.value = person.name;
+                        option.textContent = person.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading persons:', error);
+            }
+        }
+
+        // Load person data
+        async function loadPersonData(personName) {
+            try {
+                const response = await fetch('/api/load-person', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ person_name: personName })
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    currentPersonData = data.data;
+                    document.getElementById('personName').textContent = personName;
+                    document.getElementById('personInfo').classList.add('active');
+                    document.getElementById('chatInput').disabled = false;
+                    document.getElementById('sendBtn').disabled = false;
+                    
+                    addSystemMessage(`Loaded profile data for ${personName}. You can now ask questions about their profile.`);
+                    
+                    // Initialize chat with context
+                    chatHistory = [{
+                        role: 'system',
+                        content: `You are an AI assistant helping to answer questions about a person's professional profile. You have access to their resume, analysis, and scraped data from various platforms (GitHub, LinkedIn, DevPost, Kaggle, etc.). Use the available tools to answer questions accurately.`
+                    }];
+                } else {
+                    alert('Error loading person data: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error loading person data:', error);
+                alert('Error loading person data');
+            }
+        }
+
+        // Person selection handler
+        document.getElementById('personSelect').addEventListener('change', (e) => {
+            const personName = e.target.value;
+            if (personName) {
+                loadPersonData(personName);
+            } else {
+                currentPersonData = null;
+                document.getElementById('personInfo').classList.remove('active');
+                document.getElementById('chatInput').disabled = true;
+                document.getElementById('sendBtn').disabled = true;
+                chatHistory = [];
+                document.getElementById('chatMessages').innerHTML = `
+                    <div class="message system">
+                        <div class="message-content">
+                            Select a person to start chatting with the AI agent about their profile.
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        // Chat form handler
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentPersonData) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            // Disable input while processing
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="loading"></div>';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        person_data: currentPersonData,
+                        chat_history: chatHistory
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const toolsUsed = data.tool_used || 'lookup_resume';
+                    const isMultipleTools = toolsUsed.includes(',');
+                    addMessage('assistant', data.response, toolsUsed, isMultipleTools);
+                    chatHistory.push({ role: 'user', content: message });
+                    chatHistory.push({ role: 'assistant', content: data.response });
+                } else {
+                    addMessage('assistant', 'Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                addMessage('assistant', 'Error: Failed to send message');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+            }
+        });
+
+        function addMessage(role, content, toolUsed = null, isMultiple = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            let toolIndicator = '';
+            if (toolUsed) {
+                const toolClass = isMultiple ? 'tool-indicator multiple' : 'tool-indicator';
+                const toolText = isMultiple ? `🔧 Used tools: ${toolUsed}` : `🔧 Used tool: ${toolUsed}`;
+                toolIndicator = `<div class="${toolClass}">${toolText}</div>`;
+            }
+            
+            // Format content with line breaks
+            const formattedContent = content.replace(/\n/g, '<br>');
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${formattedContent}
+                    ${toolIndicator}
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addSystemMessage(content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Load persons on page load
+        loadPersons();
+    </script>
+</body>
+</html>
